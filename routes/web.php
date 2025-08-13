@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\UsuarioController;
 
 // Ruta principal
 Route::get('/', function () {
@@ -17,3 +18,9 @@ Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('p
 Route::put('/proyectos/{id}', [ProyectoController::class, 'put'])->name('proyectos.update'); // Actualizar un proyecto
 Route::get('/proyectos/{id}/delete', [ProyectoController::class, 'confirmDelete'])->name('proyectos.confirmDelete'); // Confirmar eliminación de un proyecto
 Route::delete('/proyectos/{id}', [ProyectoController::class, 'delete'])->name('proyectos.delete'); // Eliminar un proyecto
+
+//Rutas para usuarios
+Route::get('/registro', function () {return view('registro');})->name('usuario.formularioRegistro'); // Formulario de registro
+Route::post('/registro', [UsuarioController::class, 'registrar'])->name('usuario.registrar'); // Registrar usuario
+Route::get('/login', function () {return view('login');})->name('usuario.formularioLogin'); // Formulario de inicio de sesión
+Route::post('/login', [UsuarioController::class, 'IniciarSesion'])->name('usuario.login'); // Iniciar sesión

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UsuarioController extends Controller
 {
@@ -45,24 +46,34 @@ class UsuarioController extends Controller
     public function IniciarSesion(Request $request)
     {
         try {
+            // Validamos que lleguen los datos
+            $request->validate([
+                'correo' => 'required|email',
+                'contraseña' => 'required|string',
+            ]);
+
             $credentials = $request->only('correo', 'contraseña');
 
-            if (!$token = Auth::guard('api')->attempt([
-                'correo' => $credentials['correo'],
-                'password' => $credentials['contraseña'], // Laravel espera 'password', es importante que coincida con el campo en la base de datos(escrito por mi no por IA :D).
-            ])) {
+            // Buscamos al usuario por correo
+            $usuario = Usuario::where('correo', $credentials['correo'])->first();
+
+            if (!$usuario || !Hash::check($credentials['contraseña'], $usuario->contraseña)) {
                 return response()->json(['error' => 'Credenciales inválidas'], 401);
             }
+
+            // Generamos el token JWT para este usuario
+            $token = JWTAuth::fromUser($usuario);
 
             return response()->json([
                 'success' => true,
                 'token' => $token,
             ]);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'errors' => $e->errors(),
-        ], 422);
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -17,7 +17,7 @@ Route::get('/proyectos/{id}', [ProyectoController::class, 'get'])->name('proyect
 Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit'); // Mostrar formulario para editar un proyecto
 Route::put('/proyectos/{id}', [ProyectoController::class, 'put'])->name('proyectos.update'); // Actualizar un proyecto
 Route::get('/proyectos/{id}/delete', [ProyectoController::class, 'confirmDelete'])->name('proyectos.confirmDelete'); // Confirmar eliminación de un proyecto
-Route::delete('/proyectos/{id}', [ProyectoController::class, 'delete'])->name('proyectos.delete'); // Eliminar un proyecto
+Route::delete('/proyectos/{id}', [ProyectoController::class, 'delete'])->name('proyectos.destroy'); // Eliminar un proyecto
 
 //Rutas para usuarios
 Route::get('/registro', function () {return view('registro');})->name('usuario.formularioRegistro'); // Formulario de registro

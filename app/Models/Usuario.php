@@ -27,8 +27,8 @@ class Usuario extends Authenticatable implements JWTSubject
     public static function datosEstaticos()
     {
         return [
-            ['id' => 1, 'nombre' => 'Juan Perez', 'correo' => 'juan@ejemplo.com', 'clave' => bcrypt('123456')],
-            ['id' => 2, 'nombre' => 'Maria Lopez', 'correo' => 'maria@ejemplo.com', 'clave' => bcrypt('123456')],
+            ['id' => 1, 'nombre' => 'Juan Perez', 'correo' => 'juan@ejemplo.com', 'contraseña' => bcrypt('123456')],
+            ['id' => 2, 'nombre' => 'Maria Lopez', 'correo' => 'maria@ejemplo.com', 'contraseña' => bcrypt('123456')],
         ];
     }
 

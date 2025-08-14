@@ -29,18 +29,25 @@
                     <tr>
                         <td>{{ $proyecto->id }}</td>
                         <td>{{ $proyecto->nombre }}</td>
-                        <td>{{ $proyecto->fecha_inicio }}</td>
+                        <td>{{ $proyecto->fecha_de_inicio }}</td>
                         <td>{{ $proyecto->estado }}</td>
                         <td>{{ $proyecto->responsable }}</td>
                         <td>{{ $proyecto->monto }}</td>
                         <td>
                             <a href="{{ route('proyectos.show', $proyecto->id) }}">Ver</a>
-                            <a href="{{ route('proyectos.edit', $proyecto->id) }}">Editar</a>
-                            <form action="{{ route('proyectos.destroy', $proyecto->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit">Eliminar</button>
-                            </form>
+
+                            @if($proyecto->id > 2)
+                                <a href="{{ route('proyectos.edit', $proyecto->id) }}">Editar</a>
+
+                                <form action="{{ route('proyectos.destroy', $proyecto->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit">Eliminar</button>
+                                </form>
+                            @else
+                                <span style="color:gray;">Editar</span>
+                                <span style="color:gray;">Eliminar</span>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

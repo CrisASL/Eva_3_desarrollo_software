@@ -16,10 +16,13 @@ class UsuarioFactory extends Factory
     
     public function definition(): array
     {
+        static $idCounter = 3; // Empezar desde 3 para no pisar los datos estáticos
+
         return [
-            'nombre'     => $this->faker->name(),
-            'correo'     => $this->faker->unique()->safeEmail(),
-            'contraseña' => Hash::make('123456'),
+            'id' => $idCounter++, // Incrementa el contador y asigna un nuevo ID
+            'nombre'     => $this->faker->name(), // Genera un nombre aleatorio
+            'correo'     => $this->faker->unique()->safeEmail(), // Genera un correo electrónico único aleatorio
+            'contraseña' => Hash::make('123456'), // Contraseña encriptada
         ];
     }
 }

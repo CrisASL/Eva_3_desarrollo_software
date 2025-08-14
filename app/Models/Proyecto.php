@@ -15,7 +15,7 @@ class Proyecto extends Model
 
     protected $fillable = [
         'nombre',
-        'fecha_inicio',
+        'fecha_de_inicio',
         'estado',
         'responsable',
         'monto',
@@ -34,8 +34,8 @@ class Proyecto extends Model
         return [
             [
                 'id' => 1,
-                'nombre' => 'Proyecto Popi',
-                'fecha_inicio' => '2024-01-15',
+                'nombre' => 'Proyecto Herrero',
+                'fecha_de_inicio' => '2024-01-15',
                 'estado' => 'En progreso',
                 'responsable' => 'Juan Perez',
                 'monto' => 1000000,
@@ -44,7 +44,7 @@ class Proyecto extends Model
             [
                 'id' => 2,
                 'nombre' => 'Proyecto Salas',
-                'fecha_inicio' => '2024-03-01',
+                'fecha_de_inicio' => '2024-03-01',
                 'estado' => 'Terminado',
                 'responsable' => 'Maria Lopez',
                 'monto' => 500000,

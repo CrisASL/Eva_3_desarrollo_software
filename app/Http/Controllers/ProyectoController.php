@@ -7,50 +7,87 @@ use App\Models\Proyecto;
 
 class ProyectoController extends Controller
 {
-    protected $proyectos = [];
+    
+    //Mostrar todos los proyectos (combina estáticos y DB)
+    public function getall(Request $request)
+    {
+        $proyectosDB = Proyecto::all(); // Collection Eloquent
+        $proyectosEstaticos = Proyecto::datosEstaticos();
 
-    // Mostrar todos los proyectos
-    public function getall(Request $request) {
-    // Verificar si la solicitud es AJAX o si se está llamando desde la API
-    if ($request->wantsJson()) {
-        return response()->json($this->proyectos); // Devuelve todos los proyectos en formato JSON
-    }
+        // Convertir array de estáticos a colección de objetos
+        $proyectosEstaticosObj = collect(array_map(fn($item) => (object) $item, $proyectosEstaticos));
 
-    return view('showall', ['proyectos' => $this->proyectos]); // Devuelve la vista para la aplicación web
-}
+        // Combinar colecciones usando concat()
+        $proyectosCombinados = $proyectosDB->concat($proyectosEstaticosObj);
 
-    // Crear un nuevo proyecto (para la vista web)
-    public function post(Request $request) {
-        $request->validate([
-            'nombre' => 'required|string',
-            'fecha_inicio' => 'required|date',
-            'estado' => 'required|string',
-            'responsable' => 'required|string',
-            'monto' => 'required|numeric',
-        ]);
-
-        $id = count($this->proyectos) + 1; // Generación simple de ID
-        $proyecto = new Proyecto($id, $request->nombre, $request->fecha_inicio, $request->estado, $request->responsable, $request->monto);
-        $this->proyectos[] = $proyecto;
-
-        return redirect()->route('proyectos.showall')->with('success', 'Proyecto creado exitosamente.');
-    }
-
-    // Obtener un proyecto específico
-    public function get($id) {
-        $proyecto = $this->findProyectoById($id);
-        
-        if (!$proyecto) {
-            return view('show', ['error' => 'Proyecto no encontrado.']);
+        if ($request->wantsJson()) {
+            return response()->json($proyectosCombinados);
         }
 
-        return view('show', ['proyecto' => $proyecto]);
+        return view('showall', ['proyectos' => $proyectosCombinados]);
     }
 
-    // Editar un proyecto (muestra el formulario)
-    public function edit($id) {
-        $proyecto = $this->findProyectoById($id);
-        
+    
+    //Crear un nuevo proyecto en la base de datos
+    
+    public function post(Request $request) {
+    $request->validate([
+        'nombre' => 'required|string',
+        'fecha_de_inicio' => 'required|date',
+        'estado' => 'required|string',
+        'responsable' => 'required|string',
+        'monto' => 'required|numeric',
+    ]);
+
+    $proyecto = new Proyecto();
+    $proyecto->nombre = $request->nombre;
+    $proyecto->fecha_de_inicio = $request->fecha_de_inicio;
+    $proyecto->estado = $request->estado;
+    $proyecto->responsable = $request->responsable;
+    $proyecto->monto = $request->monto;
+    $proyecto->created_by = 1; // O el ID del usuario logueado
+
+    $proyecto->save(); // Guardar en la base de datos
+
+    return redirect()->route('proyectos.showall')->with('success', 'Proyecto creado exitosamente.');
+    }
+
+    
+    //Obtener un proyecto específico
+    
+    public function get($id)
+    {
+    // Primero buscar en la base de datos
+    $proyecto = Proyecto::find($id);
+
+    // Si no se encuentra en la base, buscar en los datos estáticos
+    if (!$proyecto) {
+        $proyecto = collect(Proyecto::datosEstaticos())->first(function($item) use ($id) {
+            return $item['id'] == $id; // comparar valor, no tipo
+        });
+
+        // Convertir array estático a objeto para la vista
+        if ($proyecto) {
+            $proyecto = (object) $proyecto;
+        }
+    }
+
+    // Si aún no se encuentra, redirigir o mostrar mensaje de error
+    if (!$proyecto) {
+        return redirect()->route('proyectos.showall')->with('error', 'Proyecto no encontrado.');
+    }
+
+    return view('show', ['proyecto' => $proyecto]);
+    }
+
+
+    
+    //Mostrar formulario de edición
+     
+    public function edit($id)
+    {
+        $proyecto = Proyecto::find($id);
+
         if (!$proyecto) {
             return redirect()->route('proyectos.showall')->with('error', 'Proyecto no encontrado.');
         }
@@ -58,10 +95,13 @@ class ProyectoController extends Controller
         return view('update', ['proyecto' => $proyecto]);
     }
 
-    // Actualizar un proyecto
-    public function put(Request $request, $id) {
-        $proyecto = $this->findProyectoById($id);
-        
+    
+    //Actualizar proyecto en la base de datos
+    
+    public function put(Request $request, $id)
+    {
+        $proyecto = Proyecto::find($id);
+
         if (!$proyecto) {
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
@@ -74,49 +114,46 @@ class ProyectoController extends Controller
             'monto' => 'sometimes|required|numeric',
         ]);
 
-        // Actualizar los campos del proyecto
-        $proyecto->nombre = $request->input('nombre', $proyecto->nombre);
-        $proyecto->fecha_inicio = $request->input('fecha_inicio', $proyecto->fecha_inicio);
-        $proyecto->estado = $request->input('estado', $proyecto->estado);
-        $proyecto->responsable = $request->input('responsable', $proyecto->responsable);
-        $proyecto->monto = $request->input('monto', $proyecto->monto);
+        $proyecto->update($request->only('nombre','fecha_inicio','estado','responsable','monto'));
 
         return redirect()->route('proyectos.show', $id)->with('success', 'Proyecto actualizado exitosamente.');
     }
 
-    // Eliminar un proyecto
-    public function delete($id) {
-        $proyectoIndex = array_search($this->findProyectoById($id), $this->proyectos);
-        if ($proyectoIndex === false) {
+    
+    //Eliminar proyecto de la base de datos
+    
+    public function delete($id)
+    {
+        $proyecto = Proyecto::find($id);
+
+        if (!$proyecto) {
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
         }
 
-        array_splice($this->proyectos, $proyectoIndex, 1);
+        $proyecto->delete();
+
         return redirect()->route('proyectos.showall')->with('success', 'Proyecto eliminado.');
     }
 
-    // Método privado para encontrar un proyecto por ID
-    private function findProyectoById($id) {
-        foreach ($this->proyectos as $proyecto) {
-            if ($proyecto->id == $id) {
-                return $proyecto;
-            }
-        }
-        return null; // Retorna null si no se encuentra
-    }
-
-    // Mostrar formulario para crear un nuevo proyecto
-    public function create() {
-        return view('make'); // Carga resources/views/make.blade.php
-    }
-
-    public function confirmDelete($id) {
-    $proyecto = $this->findProyectoById($id);
     
-    if (!$proyecto) {
-        return redirect()->route('proyectos.showall')->with('error', 'Proyecto no encontrado.');
+    //Mostrar formulario para crear un proyecto
+     
+    public function create()
+    {
+        return view('make');
     }
 
-    return view('delete', ['proyecto' => $proyecto]);
-}
+    
+    //Confirmar eliminación (vista)
+    
+    public function confirmDelete($id)
+    {
+        $proyecto = Proyecto::find($id);
+
+        if (!$proyecto) {
+            return redirect()->route('proyectos.showall')->with('error', 'Proyecto no encontrado.');
+        }
+
+        return view('delete', ['proyecto' => $proyecto]);
+    }
 }

@@ -10,7 +10,7 @@ Route::post('/register', [UsuarioController::class, 'registrar']);
 Route::post('/login', [UsuarioController::class, 'IniciarSesion']);
 
 // Rutas protegidas con JWT para proyectos
-Route::middleware(['jwt.auth'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     Route::get('/proyectos', [ProyectoController::class, 'getall']); // Obtener todos los proyectos
     Route::post('/proyectos', [ProyectoController::class, 'post']); // Crear un nuevo proyecto
     Route::get('/proyectos/{id}', [ProyectoController::class, 'get']); // Obtener un proyecto específico

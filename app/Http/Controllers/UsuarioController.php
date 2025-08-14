@@ -46,23 +46,24 @@ class UsuarioController extends Controller
     public function IniciarSesion(Request $request)
     {
         try {
-            // Validamos que lleguen los datos
+            // Validar que lleguen los datos
             $request->validate([
                 'correo' => 'required|email',
                 'contraseña' => 'required|string',
             ]);
 
+            // Obtener los datos
             $credentials = $request->only('correo', 'contraseña');
 
-            // Buscamos al usuario por correo
+            // Buscar usuario por correo
             $usuario = Usuario::where('correo', $credentials['correo'])->first();
 
             if (!$usuario || !Hash::check($credentials['contraseña'], $usuario->contraseña)) {
                 return response()->json(['error' => 'Credenciales inválidas'], 401);
             }
 
-            // Generamos el token JWT para este usuario
-            $token = JWTAuth::fromUser($usuario);
+            // Generar token JWT
+            $token = auth('api')->login($usuario); // ⚡ usar el guard 'api'
 
             return response()->json([
                 'success' => true,
@@ -81,4 +82,5 @@ class UsuarioController extends Controller
             ], 500);
         }
     }
+
 }

@@ -31,27 +31,34 @@ class ProyectoController extends Controller
     //Crear un nuevo proyecto en la base de datos
     
     public function post(Request $request) {
-    $request->validate([
-        'nombre' => 'required|string',
-        'fecha_de_inicio' => 'required|date',
-        'estado' => 'required|string',
-        'responsable' => 'required|string',
-        'monto' => 'required|numeric',
-    ]);
+    // Validación
+        $request->validate([
+            'nombre' => 'required|string',
+            'fecha_de_inicio' => 'required|date',
+            'estado' => 'required|string',
+            'responsable' => 'required|string',
+            'monto' => 'required|numeric',
+        ]);
 
-    $proyecto = new Proyecto();
-    $proyecto->nombre = $request->nombre;
-    $proyecto->fecha_de_inicio = $request->fecha_de_inicio;
-    $proyecto->estado = $request->estado;
-    $proyecto->responsable = $request->responsable;
-    $proyecto->monto = $request->monto;
-    $proyecto->created_by = 1; // O el ID del usuario logueado
+        // Crear nuevo proyecto
+        $proyecto = new Proyecto();
+        $proyecto->nombre = $request->nombre;
+        $proyecto->fecha_de_inicio = $request->fecha_de_inicio;
+        $proyecto->estado = $request->estado;
+        $proyecto->responsable = $request->responsable;
+        $proyecto->monto = $request->monto;
+        
+        // Asignar el ID del usuario logueado desde JWT
+        $proyecto->created_by = auth('api')->id(); // <-- cambio importante
 
-    $proyecto->save(); // Guardar en la base de datos
+        $proyecto->save(); // Guardar en la base de datos
 
-    return redirect()->route('proyectos.showall')->with('success', 'Proyecto creado exitosamente.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Proyecto creado exitosamente.',
+            'proyecto' => $proyecto
+        ]);
     }
-
     
     //Obtener un proyecto específico
     

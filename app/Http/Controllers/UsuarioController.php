@@ -63,7 +63,7 @@ class UsuarioController extends Controller
             }
 
             // Generar token JWT
-            $token = auth('api')->login($usuario); // ⚡ usar el guard 'api'
+            $token = auth('api')->login($usuario);
 
             return response()->json([
                 'success' => true,
